@@ -1,0 +1,318 @@
+<main class="review">
+  <header class="review-header">
+    <h1 class="review-title">Group Pre-Order Cart</h1>
+    @if (invite(); as info) {
+      <p class="review-subtitle">
+        {{ info.LocationAddress }} · {{ info.StartTime | date: 'mediumDate' }} ·
+        {{ info.StartTime | date: 'HH:mm' }} – {{ info.EndTime | date: 'HH:mm' }}
+        @if (info.TableNumber) {
+          · Table {{ info.TableNumber }}
+        }
+      </p>
+    }
+    <a class="classic-link" [routerLink]="['/reservations', reservationKey, 'group-order']">Classic view</a>
+  </header>
+
+  @switch (loadState()) {
+    @case ('loading') {
+      <p class="state" role="status">Loading group pre-order…</p>
+    }
+    @case ('not-found') {
+      <p class="state state-error" role="alert">Group reservation not found</p>
+    }
+    @case ('error') {
+      <div class="state state-error" role="alert">
+        <p>Couldn’t load the group pre-order.</p>
+        <button type="button" class="outline-button" (click)="load()">Try again</button>
+      </div>
+    }
+    @case ('ready') {
+      <!-- ===== Прогрес ===== -->
+      <section class="progress-card" aria-labelledby="progress-title">
+        <div class="progress-top">
+          <div>
+            <h2 id="progress-title" class="progress-title">{{ orderedCount() }} of {{ seats() }} guests ordered</h2>
+            <p class="muted">{{ dishesCount() }} dishes · {{ reviewGrandTotal() | currency }} total</p>
+          </div>
+          <span class="pill" [class.pill-sent]="isSubmitted()">
+            @if (isSubmitted()) {
+              Sent to Restaurant
+            } @else {
+              🔒 {{ startsIn() }}
+            }
+          </span>
+        </div>
+
+        <div class="segments" aria-hidden="true">
+          @for (chip of chips(); track chip.key) {
+            <span class="segment" [class.done]="chip.ordered"></span>
+          }
+        </div>
+
+        <div class="chips-row">
+          <ul class="member-chips" aria-label="Who has ordered">
+            @for (chip of chips(); track chip.key) {
+              <li class="member-chip" [class.ordered]="chip.ordered" [class.pending]="chip.joined && !chip.ordered" [class.empty]="!chip.joined">
+                <span class="dot" aria-hidden="true"></span>
+                {{ chip.name }}
+                <span class="visually-hidden">{{ chip.ordered ? '— ordered' : chip.joined ? '— not ordered yet' : '' }}</span>
+              </li>
+            }
+          </ul>
+          @if (pendingGuests().length && !isSubmitted()) {
+            <button type="button" class="text-link" disabled title="Reminders are not supported by the backend yet">
+              Remind {{ pendingGuests().length }} pending
+            </button>
+          }
+        </div>
+
+        <p class="sync-line">
+          @if (syncFailed()) {
+            <span class="sync-error">Couldn’t refresh. Showing data from {{ lastUpdated() | date: 'HH:mm:ss' }}</span>
+          } @else {
+            <span>Updated at {{ lastUpdated() | date: 'HH:mm:ss' }}</span>
+          }
+          @if (!isSubmitted()) {
+            <button type="button" class="text-link" (click)="refresh()">Refresh</button>
+          }
+        </p>
+      </section>
+
+      <!-- ===== Перемикач подання ===== -->
+      <div class="toolbar">
+        <div class="segmented" role="group" aria-label="View">
+          <button type="button" [class.active]="viewMode() === 'guest'" [attr.aria-pressed]="viewMode() === 'guest'" (click)="setView('guest')">By guest</button>
+          <button type="button" [class.active]="viewMode() === 'dish'" [attr.aria-pressed]="viewMode() === 'dish'" (click)="setView('dish')">By dish</button>
+        </div>
+        @if (viewMode() === 'guest') {
+          <button type="button" class="text-link" (click)="toggleAll()">{{ allCollapsed() ? 'Expand all' : 'Collapse all' }}</button>
+        }
+      </div>
+
+      @if (viewMode() === 'guest') {
+        <!-- ===== By guest ===== -->
+        <ul class="cards">
+          <!-- Owner -->
+          <li>
+            <article class="person-card">
+              <header class="person-head">
+                <span class="avatar-letter" aria-hidden="true">Y</span>
+                <div class="person-info">
+                  <h3 class="person-name">
+                    You · Host
+                    <span class="status-chip" [class.ok]="ownerOrdered()" [class.wait]="!ownerOrdered()">
+                      {{ ownerOrdered() ? 'Ordered' : 'Not ordered' }}
+                    </span>
+                  </h3>
+                  <p class="muted small">{{ isCollapsed('host') && ownerItems().length ? dishNames(ownerItems()) : itemsLabel(ownerItems()) }}</p>
+                </div>
+                <span class="person-total">{{ ownerTotal() | currency }}</span>
+                <button type="button" class="icon-btn" [attr.aria-expanded]="!isCollapsed('host')" aria-label="Toggle your order" (click)="toggle('host')">
+                  <span class="chevron" [class.down]="isCollapsed('host')" aria-hidden="true">⌃</span>
+                </button>
+              </header>
+
+              @if (!isCollapsed('host')) {
+                @if (ownerItems().length) {
+                  <ul class="dish-cards">
+                    @for (item of ownerItems(); track item.dish.id) {
+                      <li class="dish-card">
+                        @if (item.dish.imageUrl) {
+                          <img class="dish-photo" [src]="item.dish.imageUrl" alt="" width="72" height="72" loading="lazy" />
+                        } @else {
+                          <span class="dish-photo initial" aria-hidden="true">{{ initial(item.dish.name) }}</span>
+                        }
+                        <div class="dish-body">
+                          <p class="dish-name">{{ item.dish.name }}</p>
+                          <p class="muted small">Qty: {{ item.quantity }}</p>
+                        </div>
+                        <p class="dish-price">{{ item.dish.price * item.quantity | currency }}</p>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="note note-yellow">You haven’t added your own dishes yet.</p>
+                }
+                @if (!isSubmitted()) {
+                  <a class="add-link" routerLink="/menu" [queryParams]="{ preOrder: 'true', reservationId: reservationKey }">＋ Add more dishes</a>
+                }
+              }
+            </article>
+          </li>
+
+          <!-- Гості -->
+          @for (guest of guests(); track guest.id) {
+            <li>
+              <article class="person-card">
+                <header class="person-head">
+                  <span class="avatar-letter" aria-hidden="true">{{ initial(guest.name) }}</span>
+                  <div class="person-info">
+                    <h3 class="person-name">
+                      {{ guest.name }}
+                      <span class="status-chip" [class.ok]="guest.isSubmitted" [class.wait]="!guest.isSubmitted">
+                        {{ guest.isSubmitted ? 'Ordered' : 'Not ordered' }}
+                      </span>
+                    </h3>
+                    <p class="muted small">{{ isCollapsed(guest.id) && guest.items.length ? dishNames(guest.items) : itemsLabel(guest.items) }}</p>
+                  </div>
+                  @if (guest.items.length) {
+                    <span class="person-total">{{ guest.total | currency }}</span>
+                  }
+                  @if (!isSubmitted()) {
+                    <div class="menu-wrap">
+                      <button
+                        type="button"
+                        class="icon-btn"
+                        aria-haspopup="menu"
+                        [attr.aria-expanded]="openMenuId() === guest.id"
+                        [attr.aria-label]="'Actions for ' + guest.name"
+                        (click)="toggleMenu(guest.id)"
+                      >⋮</button>
+                      @if (openMenuId() === guest.id) {
+                        <div class="menu" role="menu">
+                          <button type="button" role="menuitem" disabled title="Editing guests' orders is not supported by the backend yet">Edit {{ guest.name }}’s order</button>
+                          <button type="button" role="menuitem" disabled title="Reminders are not supported by the backend yet">Send reminder</button>
+                          <button type="button" role="menuitem" (click)="copyInviteLink()">Copy invite link</button>
+                          <button type="button" role="menuitem" class="danger" (click)="removeFromMenu(guest)">Remove guest</button>
+                        </div>
+                      }
+                    </div>
+                  }
+                  <button type="button" class="icon-btn" [attr.aria-expanded]="!isCollapsed(guest.id)" [attr.aria-label]="'Toggle ' + guest.name + '’s order'" (click)="toggle(guest.id)">
+                    <span class="chevron" [class.down]="isCollapsed(guest.id)" aria-hidden="true">⌃</span>
+                  </button>
+                </header>
+
+                @if (!isCollapsed(guest.id)) {
+                  @if (guest.items.length) {
+                    @if (!guest.isSubmitted) {
+                      <p class="note note-yellow small">{{ guest.name }} is still choosing — these dishes won’t be included until the cart is submitted.</p>
+                    }
+                    <ul class="dish-rows">
+                      @for (item of guest.items; track item.dish.id) {
+                        <li class="dish-row">
+                          <span class="avatar-letter" aria-hidden="true">{{ initial(item.dish.name) }}</span>
+                          <p class="dish-name">{{ item.dish.name }}</p>
+                          <p class="muted small">×{{ item.quantity }}</p>
+                          <p class="row-price">{{ item.dish.price * item.quantity | currency }}</p>
+                        </li>
+                      }
+                    </ul>
+                    <p class="subtotal"><span>{{ guest.name }}’s subtotal</span><span>{{ guest.total | currency }}</span></p>
+                  } @else {
+                    <div class="note note-yellow">
+                      <p>{{ guest.name }} hasn’t picked any dishes yet. They can still order until the reservation starts.</p>
+                      @if (!isSubmitted()) {
+                        <div class="note-actions">
+                          <button type="button" class="outline-button small" disabled title="Reminders are not supported by the backend yet">Send reminder</button>
+                          <button type="button" class="text-link" (click)="copyInviteLink()">Copy invite link</button>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+              </article>
+            </li>
+          }
+        </ul>
+      } @else {
+        <!-- ===== By dish ===== -->
+        @if (!dishGroups().length) {
+          <p class="state">Participants haven’t added any dishes yet</p>
+        }
+        @for (group of dishGroups(); track group.title) {
+          <section class="person-card" [attr.aria-label]="group.title">
+            <header class="group-head">
+              <h3 class="person-name">{{ group.title }} <span class="muted small">{{ group.rows.length }} {{ group.rows.length === 1 ? 'dish' : 'dishes' }}</span></h3>
+              <span class="person-total">{{ group.total | currency }}</span>
+            </header>
+            <ul class="dish-rows">
+              @for (row of group.rows; track row.dish.id) {
+                <li class="by-dish-row">
+                  @if (row.dish.imageUrl) {
+                    <img class="row-photo" [src]="row.dish.imageUrl" alt="" width="48" height="48" loading="lazy" />
+                  } @else {
+                    <span class="row-photo initial" aria-hidden="true">{{ initial(row.dish.name) }}</span>
+                  }
+                  <div class="dish-body">
+                    <p class="dish-name">{{ row.dish.name }}</p>
+                    <p class="muted small ordered-by">
+                      Ordered by
+                      @for (who of row.orderedBy; track who.name) {
+                        <span class="who" [class.who-pending]="!who.isSubmitted">{{ who.name }}{{ who.isSubmitted ? '' : ' (choosing)' }}</span>
+                      }
+                    </p>
+                  </div>
+                  <div class="row-right">
+                    <p class="row-price">{{ row.total | currency }}</p>
+                    <p class="muted small">×{{ row.quantity }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+        @for (guest of emptyGuests(); track guest.id) {
+          <p class="note note-yellow inline-note">
+            <span>{{ guest.name }} hasn’t added any dishes yet</span>
+            <button type="button" class="text-link" disabled title="Reminders are not supported by the backend yet">Send reminder</button>
+          </p>
+        }
+      }
+
+      <!-- ===== Recent activity (заглушка) ===== -->
+      <section class="person-card activity">
+        <button type="button" class="activity-toggle" [attr.aria-expanded]="activityOpen()" (click)="activityOpen.set(!activityOpen())">
+          <span>Recent activity</span>
+          <span class="chevron" [class.down]="!activityOpen()" aria-hidden="true">⌃</span>
+        </button>
+        @if (activityOpen()) {
+          <p class="muted small">Activity history will appear here once the backend starts tracking guests’ actions.</p>
+        }
+      </section>
+
+      <!-- ===== Підсумок ===== -->
+      <footer class="review-footer">
+        <p class="sum-line"><span>Your order</span><span>{{ ownerTotal() | currency }}</span></p>
+        <p class="sum-line">
+          <span>Guests’ orders{{ submittedGuestNames() ? ' (' + submittedGuestNames() + ')' : '' }}</span>
+          <span>{{ guestsTotal() | currency }}</span>
+        </p>
+        <p class="grand"><span>Grand Total</span><span class="grand-value">{{ reviewGrandTotal() | currency }}</span></p>
+        @if (isSubmitted()) {
+          <p class="sent-note" role="status">The group pre-order has been sent to the restaurant.</p>
+        } @else {
+          <button type="button" class="primary-button" [disabled]="!canSubmit()" (click)="openConfirm()">Submit Group Pre-Order</button>
+          @if (!canSubmit() && !submitting()) {
+            <p class="muted small center">Available once at least one guest has submitted their cart.</p>
+          }
+        }
+      </footer>
+
+      @if (removeTarget(); as guest) {
+        <app-modal title="Remove Guest" [closeOnBackdrop]="!removing()" (closed)="cancelRemove()">
+          <p>
+            Are you sure you want to remove <strong>{{ guest.name }}</strong> and their pre-order from this reservation?
+            This action cannot be undone.
+          </p>
+          <button modal-actions type="button" class="text-link plain" [disabled]="removing()" (click)="cancelRemove()">Cancel</button>
+          <button modal-actions type="button" class="danger-button" [disabled]="removing()" (click)="confirmRemove()">
+            {{ removing() ? 'Removing…' : 'Remove Guest' }}
+          </button>
+        </app-modal>
+      }
+
+      @if (confirmOpen()) {
+        <app-modal title="Submit Group Pre-Order" [closeOnBackdrop]="!submitting()" (closed)="closeConfirm()">
+          <p>
+            Send the group pre-order ({{ reviewGrandTotal() | currency }}) to the restaurant? Only submitted carts are included.
+          </p>
+          <button modal-actions type="button" class="text-link plain" [disabled]="submitting()" (click)="closeConfirm()">Cancel</button>
+          <button modal-actions type="button" class="primary-button compact" [disabled]="submitting()" (click)="submit()">
+            {{ submitting() ? 'Submitting…' : 'Submit' }}
+          </button>
+        </app-modal>
+      }
+    }
+  }
+</main>

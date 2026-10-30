@@ -1,0 +1,280 @@
+@use 'app/shared/styles/abstracts/colors' as color;
+
+:host {
+  display: block;
+  background: color.$neutral-100;
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+
+// ---------- Шапка ----------
+.page-header {
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid color.$green-150;
+}
+
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 500;
+  color: color.$neutral-900;
+}
+
+.status-badge {
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: color.$neutral-200;
+  color: color.$neutral-700;
+  font-size: 12px;
+  line-height: 20px;
+
+  &.sent {
+    background: color.$orange-100;
+    color: color.$orange-600;
+  }
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: color.$neutral-700;
+  font-size: 14px;
+}
+
+// ---------- Синхронізація ----------
+.sync-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -8px 0 16px;
+}
+
+.sync-text {
+  margin: 0;
+  font-size: 12px;
+  color: color.$neutral-400;
+}
+
+.sync-error {
+  color: color.$orange-600;
+}
+
+// ---------- Стани та плашка ----------
+.state {
+  margin: 0 0 24px;
+  padding: 24px 16px;
+  border-radius: 12px;
+  background: color.$neutral-0;
+  color: color.$neutral-600;
+  text-align: center;
+
+  p {
+    margin: 0 0 12px;
+  }
+}
+
+.state-error {
+  color: color.$red-400;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  border: 1px solid color.$orange-100;
+  border-radius: 8px;
+  background: color.$orange-30;
+  color: color.$neutral-700;
+}
+
+.secondary-button {
+  padding: 8px 20px;
+  border: 1px solid color.$green-600;
+  border-radius: 8px;
+  background: color.$neutral-0;
+  color: color.$green-600;
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-button {
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid color.$neutral-900;
+  background: none;
+  color: color.$neutral-900;
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    color: color.$neutral-400;
+    cursor: not-allowed;
+  }
+}
+
+.danger-button {
+  min-height: 44px;
+  padding: 0 24px;
+  border: 1px solid color.$red-400;
+  border-radius: 8px;
+  background: color.$neutral-0;
+  color: color.$red-400;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: color.$red-30;
+  }
+
+  &:disabled {
+    border-color: color.$neutral-400;
+    color: color.$neutral-400;
+    cursor: not-allowed;
+  }
+}
+
+// ---------- Консолідоване замовлення ----------
+.consolidated {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 12px;
+  background: color.$neutral-0;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+}
+
+.consolidated-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consolidated-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  color: color.$neutral-700;
+}
+
+.sent-note {
+  margin: 0;
+  padding: 16px;
+  border-radius: 8px;
+  background: color.$neutral-200;
+  color: color.$neutral-700;
+  text-align: center;
+}
+
+// ---------- Учасники ----------
+.participants {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------- Підсумок ----------
+.summary {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px solid color.$green-150;
+}
+
+.grand-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 16px;
+  font-size: 26px;
+  line-height: 36px;
+  font-weight: 500;
+  color: color.$neutral-900;
+}
+
+.grand-total-value {
+  color: color.$green-600;
+}
+
+.submit-button {
+  width: 100%;
+  min-height: 56px;
+  border: none;
+  border-radius: 8px;
+  background: color.$green-gradient;
+  color: color.$neutral-0;
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+
+  &:focus-visible {
+    outline: 3px solid color.$green-300;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    background: color.$neutral-400;
+    cursor: not-allowed;
+    filter: none;
+  }
+
+  &.compact {
+    width: auto;
+    min-height: 44px;
+    padding: 0 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding-top: 20px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .grand-total {
+    font-size: 22px;
+  }
+}

@@ -1,0 +1,137 @@
+<main class="page">
+  <header class="page-header">
+    <div class="title-row">
+      <h1 class="page-title">Group Pre-Order</h1>
+      @if (loadState() === 'ready') {
+        <span class="status-badge" [class.sent]="isSubmitted()">{{ statusLabel() }}</span>
+      }
+    </div>
+
+    @if (invite(); as info) {
+      <ul class="meta" aria-label="Reservation details">
+        <li class="meta-item">
+          <img src="assets/svg/location-green.svg" alt="" width="20" height="20" />
+          <span>{{ info.LocationAddress }}</span>
+        </li>
+        <li class="meta-item">
+          <img src="assets/svg/calendar-green.svg" alt="" width="20" height="20" />
+          <span>{{ info.StartTime | date: 'mediumDate' }}</span>
+        </li>
+        <li class="meta-item">
+          <img src="assets/svg/clock-green.svg" alt="" width="20" height="20" />
+          <span>{{ info.StartTime | date: 'HH:mm' }} – {{ info.EndTime | date: 'HH:mm' }}</span>
+        </li>
+        @if (loadState() === 'ready') {
+          <li class="meta-item">
+            <img src="assets/svg/people-green.svg" alt="" width="20" height="20" />
+            <span>{{ guestsLabel() }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </header>
+
+  @switch (loadState()) {
+    @case ('loading') {
+      <p class="state" role="status">Loading group pre-order…</p>
+    }
+    @case ('not-found') {
+      <p class="state state-error" role="alert">Group reservation not found</p>
+    }
+    @case ('error') {
+      <div class="state state-error" role="alert">
+        <p>Couldn’t load the group pre-order.</p>
+        <button type="button" class="secondary-button" (click)="load()">Try again</button>
+      </div>
+    }
+    @case ('ready') {
+      <div class="sync-bar">
+        @if (syncFailed()) {
+          <p class="sync-text sync-error" role="status">
+            Couldn’t refresh. Showing data from {{ lastUpdated() | date: 'HH:mm:ss' }}
+          </p>
+        } @else {
+          <p class="sync-text">Updated at {{ lastUpdated() | date: 'HH:mm:ss' }}</p>
+        }
+        @if (!isSubmitted()) {
+          <button type="button" class="link-button" (click)="refresh()">Refresh</button>
+        }
+      </div>
+
+      @if (pendingCount() > 0 && !isSubmitted()) {
+        <p class="notice" role="status">
+          <img src="assets/svg/bell-regular.svg" alt="" width="20" height="20" />
+          <span>{{ pendingMessage() }}</span>
+        </p>
+      }
+
+      @if (!hasAnyDishes()) {
+        <p class="state">Participants haven’t added any dishes yet</p>
+      }
+
+      <ul class="participants">
+        @for (person of participants(); track person.id) {
+          <li>
+            <app-participant-card
+              [participant]="person"
+              [isOwn]="person.id === ownerSessionId()"
+              [canRemove]="person.type === 'Guest' && !isSubmitted()"
+              (removeClick)="askRemove($event)"
+            />
+          </li>
+        }
+      </ul>
+
+      @if (consolidated().items.length) {
+        <section class="consolidated" aria-labelledby="consolidated-title">
+          <h2 id="consolidated-title" class="section-title">Consolidated pre-order</h2>
+          <ul class="consolidated-list">
+            @for (item of consolidated().items; track item.dish.id) {
+              <li class="consolidated-item">
+                <span>{{ item.dish.name }} × {{ item.quantity }}</span>
+                <span>{{ item.dish.price * item.quantity | currency }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <footer class="summary">
+        <p class="grand-total">
+          <span>Grand Total</span>
+          <span class="grand-total-value">{{ grandTotal() | currency }}</span>
+        </p>
+        @if (isSubmitted()) {
+          <p class="sent-note" role="status">The pre-order has been sent to the restaurant.</p>
+        } @else {
+          <button type="button" class="submit-button" [disabled]="!canSubmit()" (click)="openConfirm()">Submit Pre-Order</button>
+        }
+      </footer>
+
+      @if (removeTarget(); as guest) {
+        <app-modal title="Remove Guest" [closeOnBackdrop]="!removing()" (closed)="cancelRemove()">
+          <p>
+            Are you sure you want to remove <strong>{{ guest.name }}</strong> and their pre-order from this reservation?
+            This action cannot be undone.
+          </p>
+          <button modal-actions type="button" class="link-button" [disabled]="removing()" (click)="cancelRemove()">Cancel</button>
+          <button modal-actions type="button" class="danger-button" [disabled]="removing()" (click)="confirmRemove()">
+            {{ removing() ? 'Removing…' : 'Remove Guest' }}
+          </button>
+        </app-modal>
+      }
+
+      @if (confirmOpen()) {
+        <app-modal title="Submit Pre-Order" [closeOnBackdrop]="!submitting()" (closed)="closeConfirm()">
+          <p>
+            Send the consolidated pre-order ({{ grandTotal() | currency }}) to the restaurant? Only submitted carts are included.
+          </p>
+          <button modal-actions type="button" class="link-button" [disabled]="submitting()" (click)="closeConfirm()">Cancel</button>
+          <button modal-actions type="button" class="submit-button compact" [disabled]="submitting()" (click)="submit()">
+            {{ submitting() ? 'Submitting…' : 'Submit' }}
+          </button>
+        </app-modal>
+      }
+    }
+  }
+</main>

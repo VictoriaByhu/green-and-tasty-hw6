@@ -1,0 +1,170 @@
+@use 'app/shared/styles/abstracts/colors' as color;
+
+:host {
+  display: block;
+}
+
+.card {
+  padding: 16px;
+  border-radius: 12px;
+  background: color.$neutral-0;
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+  color: color.$neutral-900;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.remove-button {
+  padding: 4px 8px;
+  border: none;
+  border-bottom: 1px solid color.$neutral-900;
+  background: none;
+  color: color.$neutral-900;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: color.$red-400;
+    border-bottom-color: color.$red-400;
+  }
+
+  &:focus-visible {
+    outline: 2px solid color.$green-300;
+    outline-offset: 2px;
+  }
+}
+
+// Статус — текстом + кольором (колір лише підсилює, а не замінює текст)
+.chip {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 500;
+
+  &.submitted {
+    background: color.$green-100;
+    color: color.$green-600;
+  }
+
+  &.pending {
+    background: color.$orange-100;
+    color: color.$orange-600;
+  }
+}
+
+.items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid color.$neutral-100;
+
+  p {
+    margin: 0;
+  }
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color.$green-100;
+  color: color.$green-600;
+  font-size: 18px;
+}
+
+.name {
+  overflow-wrap: anywhere;
+  font-weight: 500;
+  color: color.$neutral-900;
+}
+
+.qty {
+  color: color.$neutral-600;
+  white-space: nowrap;
+}
+
+.price {
+  text-align: right;
+  white-space: nowrap;
+  color: color.$neutral-900;
+}
+
+.empty {
+  margin: 12px 0;
+  color: color.$neutral-400;
+}
+
+.subtotal {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 16px 12px 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: color.$neutral-900;
+}
+
+@media (max-width: 480px) {
+  .item {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'avatar name price'
+      'avatar qty price';
+    row-gap: 0;
+  }
+
+  .avatar {
+    grid-area: avatar;
+    width: 40px;
+    height: 40px;
+  }
+
+  .name {
+    grid-area: name;
+  }
+
+  .qty {
+    grid-area: qty;
+    font-size: 12px;
+  }
+
+  .price {
+    grid-area: price;
+  }
+}
