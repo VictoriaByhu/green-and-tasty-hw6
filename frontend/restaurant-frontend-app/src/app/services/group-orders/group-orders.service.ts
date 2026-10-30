@@ -10,7 +10,6 @@ import { GroupInviteToken, GuestInvite } from '@app/models/reservations/guest-in
 import { SKIP_ERROR_TOAST } from '@app/auth/skip-error-toast.context';
 import { API_BASE_URL } from '@app/shared/config/api-base-url.token';
 
-/** HTTP-запити екрана Owner групового pre-order (контракт — homework-backend.md). */
 @Injectable({
   providedIn: 'root',
 })
@@ -18,7 +17,6 @@ export class GroupOrdersService {
   private readonly baseUrl = inject(API_BASE_URL);
   private readonly http = inject(HttpClient);
 
-  /** reservationId → invite-token → invite (у ньому GroupReservationId і дані для шапки). */
   getGroupInvite$(reservationId: string): Observable<GuestInvite> {
     return this.http
       .get<GroupInviteToken>(`${this.baseUrl}/reservations/${encodeURIComponent(reservationId)}/invite-token`)
@@ -57,14 +55,12 @@ export class GroupOrdersService {
     );
   }
 
-  /** Owner видаляє гостя з групи; відповідь — оновлений список у форматі GET …/sessions. */
   removeSession$(groupReservationId: string, guestSessionId: string): Observable<GroupSessionsResponse> {
     return this.http.delete<GroupSessionsResponse>(
       `${this.baseUrl}/guest/groups/${encodeURIComponent(groupReservationId)}/sessions/${encodeURIComponent(guestSessionId)}`,
     );
   }
 
-  /** Тихий (фоновий) запит: tokenInterceptor не показує toast на помилку. */
   private context(options?: GroupOrdersRequestOptions): HttpContext {
     return new HttpContext().set(SKIP_ERROR_TOAST, options?.silent ?? false);
   }

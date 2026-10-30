@@ -2,13 +2,11 @@ import { DishShort } from '@app/models/group-orders/participant.model';
 
 export type ReviewViewMode = 'guest' | 'dish';
 
-/** Рядок страви в картці учасника або в групі By dish. */
 export interface ReviewItem {
   dish: DishShort;
   quantity: number;
 }
 
-/** Хто з учасників замовив страву (чипи «Ordered by»). */
 export interface DishOrderer {
   name: string;
   isHost: boolean;
@@ -28,7 +26,6 @@ export interface DishGroup {
   total: number;
 }
 
-/** Чип у блоці прогресу: You, гості, ще не приєднані місця. */
 export interface MemberChip {
   key: string;
   name: string;

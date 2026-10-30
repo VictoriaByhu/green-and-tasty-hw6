@@ -20,7 +20,6 @@ export const tokenInterceptor: HttpInterceptorFn = (
   // IMPORTANT: do not modify Guest endpoints at all.
   // Guest flow uses a different token (guest session token) and we must not touch the body.
   // Otherwise we break POST /guest/sessions payload.
-  // Exception: /guest/groups/... are Owner endpoints (Cognito-protected) — they need the user's token.
   if (isGuestOnlyEndpoint(req.url)) {
     return next(req).pipe(
       catchError((error: HttpErrorResponse) => {
@@ -125,7 +124,6 @@ export const tokenInterceptor: HttpInterceptorFn = (
   );
 };
 
-/** Ендпоінти гостя (свій guest-токен). /guest/groups/... — це ендпоінти Owner, їм потрібен токен логіну. */
 function isGuestOnlyEndpoint(url: string): boolean {
   return url.includes('/guest/') && !url.includes('/guest/groups/');
 }

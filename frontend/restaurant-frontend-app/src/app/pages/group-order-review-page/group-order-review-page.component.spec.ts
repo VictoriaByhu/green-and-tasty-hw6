@@ -1,4 +1,3 @@
-// Розширений екран Owner (дизайн з власного макета). Сервіси підмінено шпигунами.
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';

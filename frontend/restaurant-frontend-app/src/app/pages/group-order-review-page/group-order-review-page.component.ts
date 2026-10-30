@@ -12,11 +12,6 @@ import { consolidatePreOrder } from '@app/shared/helpers/consolidate-pre-order';
 import { GroupOrderPageComponent } from '../group-order-page/group-order-page.component';
 import { DishGroup, DishOrderer, DishRow, MemberChip, ReviewItem, ReviewViewMode } from './models';
 
-/**
- * Екран Owner у дизайні з власного макета (Figma «hw»: Group Pre-Order Cart).
- * Уся логіка (завантаження, синхронізація кожні 15 с, Submit, Remove Guest) успадкована
- * від GroupOrderPageComponent — тут лише інше подання і кілька додаткових даних.
- */
 @Component({
   selector: 'app-group-order-review-page',
   imports: [ModalComponent, CurrencyPipe, DatePipe, RouterLink],
@@ -31,7 +26,6 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
   private readonly destroy = inject(DestroyRef);
   readonly reservationKey = inject(ActivatedRoute).snapshot.paramMap.get('reservationId') ?? '';
 
-  // ---------- стан цього подання ----------
   readonly viewMode = signal<ReviewViewMode>('guest');
   readonly collapsed = signal<ReadonlySet<string>>(new Set());
   readonly openMenuId = signal<string | null>(null);
@@ -39,7 +33,6 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
   readonly ownerOrder = signal<Order | null>(null);
   readonly dishTypes = signal<Map<string, string>>(new Map());
 
-  // ---------- учасники ----------
   readonly guests = computed(() =>
     this.participants().filter((person) => person.type === 'Guest' && person.id !== this.ownerSessionId()),
   );
@@ -47,7 +40,6 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
     this.participants().find((person) => person.id === this.ownerSessionId() || person.type === 'Owner'),
   );
 
-  /** Страви Owner: його pre-order з бекенду; якщо його немає (демо) — owner-сесія групи. */
   readonly ownerItems = computed<ReviewItem[]>(() => {
     const order = this.ownerOrder();
     if (order?.orderItems?.length) {
@@ -58,13 +50,11 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
   readonly ownerTotal = computed(() => sumItems(this.ownerItems()));
   readonly ownerOrdered = computed(() => this.ownerItems().length > 0);
 
-  /** Підтверджені кошики гостей — саме вони підуть у замовлення ресторану. */
   readonly submittedGuests = computed(() => this.guests().filter((guest) => guest.isSubmitted));
   readonly guestsTotal = computed(() => consolidatePreOrder(this.guests()).total);
   readonly reviewGrandTotal = computed(() => this.ownerTotal() + this.guestsTotal());
   readonly submittedGuestNames = computed(() => this.submittedGuests().map((guest) => guest.name).join(', '));
 
-  // ---------- прогрес «N of M guests ordered» ----------
   readonly seats = computed(() => Math.max(this.invite()?.MaxGuestCount ?? 0, this.guests().length + 1));
   readonly orderedCount = computed(() => (this.ownerOrdered() ? 1 : 0) + this.submittedGuests().length);
   readonly pendingGuests = computed(() => this.guests().filter((guest) => !guest.isSubmitted));
@@ -84,9 +74,8 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
     return chips;
   });
 
-  /** «Starts in 2h 15m» — до початку бронювання (тоді група закривається). */
   readonly startsIn = computed(() => {
-    this.lastUpdated(); // перераховуємо при кожній синхронізації
+    this.lastUpdated();
     const start = this.invite()?.StartTime;
     if (!start) return '';
     const minutes = Math.round((new Date(start).getTime() - Date.now()) / 60_000);
@@ -97,7 +86,6 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
     return hours > 0 ? `Starts in ${hours}h ${minutes % 60}m` : `Starts in ${minutes}m`;
   });
 
-  // ---------- подання By dish ----------
   readonly dishGroups = computed<DishGroup[]>(() => {
     const rows = new Map<string, DishRow>();
     const add = (items: ReviewItem[], orderer: DishOrderer) => {
@@ -131,7 +119,6 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
 
   constructor() {
     super();
-    // власне замовлення Owner підтягуємо разом із кожним оновленням групи
     effect(() => {
       if (this.lastUpdated()) {
         untracked(() => this.loadOwnerOrder());
@@ -143,7 +130,6 @@ export class GroupOrderReviewPageComponent extends GroupOrderPageComponent {
       .subscribe({ next: (types) => this.dishTypes.set(types), error: () => undefined });
   }
 
-  // ---------- дії ----------
   setView(mode: ReviewViewMode): void {
     this.viewMode.set(mode);
   }

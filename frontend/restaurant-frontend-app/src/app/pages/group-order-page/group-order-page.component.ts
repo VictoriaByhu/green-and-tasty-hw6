@@ -14,7 +14,6 @@ import { ModalComponent } from '@app/shared/custom-components/modal/modal.compon
 import { consolidatePreOrder } from '@app/shared/helpers/consolidate-pre-order';
 import { LoadState } from './models';
 
-/** Як часто підтягувати свіжі кошики, поки група Open. */
 const SYNC_INTERVAL_MS = 15_000;
 
 @Component({
@@ -30,7 +29,6 @@ export class GroupOrderPageComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly reservationId = inject(ActivatedRoute).snapshot.paramMap.get('reservationId') ?? '';
 
-  // ---------- стан ----------
   readonly loadState = signal<LoadState>('loading');
   readonly invite = signal<GuestInvite | null>(null);
   readonly participants = signal<Participant[]>([]);
@@ -38,21 +36,15 @@ export class GroupOrderPageComponent {
   readonly status = signal<GroupReservationStatus>('Open');
   readonly confirmOpen = signal(false);
   readonly submitting = signal(false);
-  /** Час останнього успішного оновлення даних. */
   readonly lastUpdated = signal<Date | null>(null);
-  /** Остання фонова синхронізація не вдалась — показуємо старі дані з поясненням. */
   readonly syncFailed = signal(false);
-  /** Гість, якого Owner збирається видалити (відкритий діалог), або null. */
   readonly removeTarget = signal<Participant | null>(null);
   readonly removing = signal(false);
 
   private readonly refreshNow$ = new Subject<void>();
   private syncSubscription: Subscription | null = null;
 
-  // ---------- похідні значення ----------
-  /** Що піде в ресторан: лише підтверджені кошики, однакові страви — одним рядком. */
   readonly consolidated = computed(() => consolidatePreOrder(this.participants()));
-  /** Grand Total — сума консолідованого замовлення, а НЕ total з API. */
   readonly grandTotal = computed(() => this.consolidated().total);
   readonly pendingCount = computed(() => this.participants().filter((person) => !person.isSubmitted).length);
   readonly pendingMessage = computed(() => {
@@ -115,15 +107,10 @@ export class GroupOrderPageComponent {
       });
   }
 
-  /** Кнопка Refresh — синхронізуватись зараз, не чекаючи таймера. */
   refresh(): void {
     this.refreshNow$.next();
   }
 
-  /**
-   * Фонова синхронізація: кожні 15 с (або по Refresh) тихо тягнемо кошики і статус.
-   * Запускається один раз — повторний load() (Try again) другого таймера не створює.
-   */
   private startSync(): void {
     if (this.syncSubscription || this.status() !== 'Open') {
       return;
@@ -131,7 +118,6 @@ export class GroupOrderPageComponent {
 
     this.syncSubscription = merge(interval(SYNC_INTERVAL_MS), this.refreshNow$)
       .pipe(
-        // поки попередній запит не відповів, новий не стартує
         exhaustMap(() => this.fetchSilently()),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -152,7 +138,6 @@ export class GroupOrderPageComponent {
       groupStatus: this.groupOrders.getStatus$(groupId, { silent: true }),
     }).pipe(
       catchError(() => {
-        // лишаємо останні дані, лише позначаємо, що оновити не вдалось
         this.syncFailed.set(true);
         return EMPTY;
       }),
@@ -169,7 +154,6 @@ export class GroupOrderPageComponent {
     this.syncFailed.set(false);
   }
 
-  // ---------- Remove Guest ----------
   askRemove(person: Participant): void {
     this.removeTarget.set(person);
   }
@@ -199,12 +183,10 @@ export class GroupOrderPageComponent {
       )
       .subscribe({
         next: (sessions) => {
-          // список і суми перераховуються самі — через ті самі computed()
           this.participants.set(sessions.participants);
           this.markUpdated();
           this.toast.success(`${person.name} was removed from the group`);
         },
-        // помилку показує tokenInterceptor; список лишається як був
         error: () => undefined,
       });
   }
@@ -223,7 +205,6 @@ export class GroupOrderPageComponent {
 
   submit(): void {
     const groupId = this.invite()?.GroupReservationId;
-    // захист від подвійного кліку: поки запит іде, другий не відправляємо
     if (!groupId || this.submitting()) {
       return;
     }
@@ -244,7 +225,6 @@ export class GroupOrderPageComponent {
           this.stopSync();
           this.toast.success('Pre-order sent to the restaurant');
         },
-        // toast з помилкою вже показує tokenInterceptor — тут не дублюємо
         error: () => undefined,
       });
   }

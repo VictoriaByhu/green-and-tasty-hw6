@@ -27,7 +27,6 @@
       </div>
     }
     @case ('ready') {
-      <!-- ===== Прогрес ===== -->
       <section class="progress-card" aria-labelledby="progress-title">
         <div class="progress-top">
           <div>
@@ -78,7 +77,6 @@
         </p>
       </section>
 
-      <!-- ===== Перемикач подання ===== -->
       <div class="toolbar">
         <div class="segmented" role="group" aria-label="View">
           <button type="button" [class.active]="viewMode() === 'guest'" [attr.aria-pressed]="viewMode() === 'guest'" (click)="setView('guest')">By guest</button>
@@ -90,9 +88,7 @@
       </div>
 
       @if (viewMode() === 'guest') {
-        <!-- ===== By guest ===== -->
         <ul class="cards">
-          <!-- Owner -->
           <li>
             <article class="person-card">
               <header class="person-head">
@@ -140,7 +136,6 @@
             </article>
           </li>
 
-          <!-- Гості -->
           @for (guest of guests(); track guest.id) {
             <li>
               <article class="person-card">
@@ -216,7 +211,6 @@
           }
         </ul>
       } @else {
-        <!-- ===== By dish ===== -->
         @if (!dishGroups().length) {
           <p class="state">Participants haven’t added any dishes yet</p>
         }
@@ -260,7 +254,6 @@
         }
       }
 
-      <!-- ===== Recent activity (заглушка) ===== -->
       <section class="person-card activity">
         <button type="button" class="activity-toggle" [attr.aria-expanded]="activityOpen()" (click)="activityOpen.set(!activityOpen())">
           <span>Recent activity</span>
@@ -271,7 +264,6 @@
         }
       </section>
 
-      <!-- ===== Підсумок ===== -->
       <footer class="review-footer">
         <p class="sum-line"><span>Your order</span><span>{{ ownerTotal() | currency }}</span></p>
         <p class="sum-line">

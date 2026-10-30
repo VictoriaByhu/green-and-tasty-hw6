@@ -22,7 +22,6 @@ button { font: inherit; }
   p { margin-bottom: 12px; } }
 .state-error { color: c.$red-400; }
 
-// ----- прогрес -----
 .progress-card { padding: 16px; border-radius: 12px; background: $soft; margin-bottom: 20px; }
 .progress-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .progress-title { margin: 0; font-size: 18px; line-height: 26px; font-weight: 500; }
@@ -44,13 +43,11 @@ button { font: inherit; }
   &:disabled { color: c.$neutral-400; cursor: not-allowed; }
   &.plain { color: c.$neutral-900; padding: 8px 12px; } }
 
-// ----- перемикач -----
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .segmented { display: inline-flex; padding: 3px; border-radius: 8px; background: c.$neutral-200;
   button { padding: 6px 14px; border: none; border-radius: 6px; background: transparent; color: c.$neutral-600; cursor: pointer; font-size: 13px;
     &.active { background: c.$neutral-0; color: c.$neutral-900; font-weight: 500; } } }
 
-// ----- картки -----
 .cards { display: flex; flex-direction: column; gap: 12px; margin: 0 0 12px; padding: 0; list-style: none; }
 .person-card { padding: 14px 16px; border: 1px solid c.$neutral-200; border-radius: 12px; background: c.$neutral-0; margin-bottom: 12px;
   .cards & { margin-bottom: 0; } }
@@ -109,7 +106,6 @@ button { font: inherit; }
 .activity { margin-top: 4px; .muted { margin-top: 8px; } }
 .activity-toggle { display: flex; justify-content: space-between; width: 100%; padding: 0; border: none; background: none; cursor: pointer; font-size: 15px; font-weight: 500; }
 
-// ----- підсумок і кнопки -----
 .review-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid c.$neutral-200; }
 .sum-line { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: c.$neutral-600; margin-bottom: 4px; }
 .grand { display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0 16px; font-size: 18px; font-weight: 500; }
